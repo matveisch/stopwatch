@@ -1,16 +1,24 @@
 import { sample } from 'effector';
-import { 
-  $time, 
-  $isRunning, 
+import {
+  $time,
+  $isRunning,
   $results,
-  startStopwatch, 
-  stopStopwatch, 
-  resetStopwatch, 
+  startStopwatch,
+  stopStopwatch,
+  resetStopwatch,
   tick,
   saveResult,
   deleteResult,
   stopwatchDomain
 } from './public';
+import {loadFromLocalStorage, saveToLocalStorage} from "./storage.ts";
+import {
+  $lastUpdateTimestamp,
+  updateIsRunning,
+  updateLastUpdateTimestamp,
+  updateResults,
+  updateTime
+} from "./private.ts";
 
 $time
   .on(tick, (state) => {
@@ -44,6 +52,7 @@ const handleRunningChange = (isRunning: boolean) => {
   console.log('isRunning changed', isRunning);
   if (isRunning && !intervalId) {
     console.log('Creating interval');
+
     intervalId = window.setInterval(() => {
       console.log('Interval tick');
       tick();
@@ -64,62 +73,14 @@ sample({
   target: runningChangeEffect,
 });
 
-// Создаем новые события для обновления состояния
-const updateTime = stopwatchDomain.createEvent<number>();
-const updateIsRunning = stopwatchDomain.createEvent<boolean>();
-const updateResults = stopwatchDomain.createEvent<number[]>();
-
 // Привязываем эти события к соответствующим сторам
 $time.on(updateTime, (_, newTime) => newTime);
 $isRunning.on(updateIsRunning, (_, newIsRunning) => newIsRunning);
 $results.on(updateResults, (_, newResults) => newResults);
 
-// Создаем новое хранилище для временной метки последнего обновления
-const $lastUpdateTimestamp = stopwatchDomain.createStore(Date.now());
-
-// Создаем событие для обновления временной метки
-const updateLastUpdateTimestamp = stopwatchDomain.createEvent<number>();
-
 // Обновляем временную метку при каждом тике
 $lastUpdateTimestamp.on(tick, () => Date.now());
 $lastUpdateTimestamp.on(updateLastUpdateTimestamp, (_, timestamp) => timestamp);
-
-// Сохранение состояния в localStorage
-const saveToLocalStorage = stopwatchDomain.createEffect(() => {
-  const state = {
-    time: $time.getState(),
-    isRunning: $isRunning.getState(),
-    results: $results.getState(),
-    lastUpdateTimestamp: $lastUpdateTimestamp.getState(),
-  };
-  localStorage.setItem('stopwatchState', JSON.stringify(state));
-});
-
-// Загрузка состояния из localStorage
-const loadFromLocalStorage = stopwatchDomain.createEffect(() => {
-  const savedState = localStorage.getItem('stopwatchState');
-  if (savedState) {
-    const { time, isRunning, results, lastUpdateTimestamp } = JSON.parse(savedState);
-    
-    if (isRunning) {
-      const currentTimestamp = Date.now();
-      const elapsedTime = currentTimestamp - lastUpdateTimestamp;
-      const newTime = time + elapsedTime;
-      updateTime(newTime);
-      updateLastUpdateTimestamp(currentTimestamp);
-    } else {
-      updateTime(time);
-      updateLastUpdateTimestamp(lastUpdateTimestamp);
-    }
-    
-    updateIsRunning(isRunning);
-    updateResults(results);
-    
-    if (isRunning) {
-      startStopwatch();
-    }
-  }
-});
 
 // Сохранение состояния при изменении
 sample({
