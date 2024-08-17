@@ -1,27 +1,33 @@
 import React from 'react';
-import styled from 'styled-components';
-import { StopwatchDisplay } from '../containers/StopwatchDisplay';
-import { StopwatchControls } from '../containers/StopwatchControls';
-import { Results } from '../containers/ResultsList';
+import { useUnit } from 'effector-react';
+import { $time, $isRunning, startStopwatch, stopStopwatch, resetStopwatch } from '../../model';
 
-const StopwatchContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: ${props => props.theme.spacing.large};
-  background-color: ${props => props.theme.colors.background};
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
-  margin: 0 auto;
-`;
+const formatTime = (ms: number): string => {
+  const minutes = Math.floor(ms / 60000);
+  const seconds = Math.floor((ms % 60000) / 1000);
+  const centiseconds = Math.floor((ms % 1000) / 10);
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;
+};
 
 export const Stopwatch: React.FC = () => {
+  const { time, isRunning, start, stop, reset } = useUnit({
+    time: $time,
+    isRunning: $isRunning,
+    start: startStopwatch,
+    stop: stopStopwatch,
+    reset: resetStopwatch,
+  });
+
   return (
-    <StopwatchContainer>
-      <StopwatchDisplay />
-      <StopwatchControls />
-      <Results />
-    </StopwatchContainer>
+    <div>
+      <h2>Stopwatch</h2>
+      <p>{formatTime(time)}</p>
+      {!isRunning ? (
+        <button onClick={() => start()}>Start</button>
+      ) : (
+        <button onClick={() => stop()}>Stop</button>
+      )}
+      <button onClick={() => reset()}>Reset</button>
+    </div>
   );
 };
