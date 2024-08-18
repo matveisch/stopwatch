@@ -14,11 +14,7 @@ export const StopwatchControls: React.FC = () => {
 
   return (
     <div>
-      {!isRunning ? (
-        <Button onClick={start}>Start</Button>
-      ) : (
-        <Button onClick={stop}>Stop</Button>
-      )}
+      {!isRunning ? <Button onClick={start}>Start</Button> : <Button onClick={stop}>Stop</Button>}
       <Button onClick={reset}>Reset</Button>
       <Button onClick={save}>Save Result</Button>
     </div>
