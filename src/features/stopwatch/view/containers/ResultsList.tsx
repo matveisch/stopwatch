@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, memo } from 'react';
 import { useUnit } from 'effector-react';
 import styled from 'styled-components';
 import { $results, deleteResult } from '../../model';
@@ -20,16 +20,26 @@ const ResultsList = styled.ul`
   width: 100%;
 `;
 
+const ResultItemComponent: React.FC<{
+  result: number;
+  index: number;
+  onDelete: (index: number) => void;
+}> = memo(({ result, index, onDelete }) => (
+  <ResultItem>
+    <span>{formatTime(result)}</span>
+    <Button onClick={() => onDelete(index)}>Delete</Button>
+  </ResultItem>
+));
+
 export const Results: React.FC = () => {
   const [results, remove] = useUnit([$results, deleteResult]);
+
+  const handleDelete = useCallback((index: number) => remove(index), [remove]);
 
   return (
     <ResultsList>
       {results.map((result, index) => (
-        <ResultItem key={index}>
-          <span>{formatTime(result)}</span>
-          <Button onClick={() => remove(index)}>Delete</Button>
-        </ResultItem>
+        <ResultItemComponent key={index} result={result} index={index} onDelete={handleDelete} />
       ))}
     </ResultsList>
   );
