@@ -6,18 +6,18 @@ import { formatTime } from '../../../../lib/time';
 import { Button } from '../parts/Button';
 
 const ResultItem = styled.li`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: ${props => props.theme.spacing.small};
-  border-bottom: 1px solid ${props => props.theme.colors.secondary};
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: ${props => props.theme.spacing.small};
+    border-bottom: 1px solid ${props => props.theme.colors.secondary};
 `;
 
 const ResultsList = styled.ul`
-  list-style-type: none;
-  padding: 0;
-  margin: ${props => props.theme.spacing.medium} 0;
-  width: 100%;
+    list-style-type: none;
+    padding: 0;
+    margin: ${props => props.theme.spacing.medium} 0;
+    width: 100%;
 `;
 
 export const Results: React.FC = () => {
