@@ -6,19 +6,19 @@ import {
   startStopwatch,
   stopStopwatch,
   resetStopwatch,
-  tick,
   saveResult,
   deleteResult,
   stopwatchDomain
 } from './public';
-import {loadFromLocalStorage, saveToLocalStorage} from "./storage.ts";
+import {loadFromLocalStorage, saveToLocalStorage} from "./storage";
 import {
   $lastUpdateTimestamp,
   updateIsRunning,
   updateLastUpdateTimestamp,
   updateResults,
-  updateTime
-} from "./private.ts";
+  updateTime,
+  tick
+} from "./private";
 
 $time
   .on(tick, (state) => {
@@ -52,7 +52,6 @@ const handleRunningChange = (isRunning: boolean) => {
   console.log('isRunning changed', isRunning);
   if (isRunning && !intervalId) {
     console.log('Creating interval');
-
     intervalId = window.setInterval(() => {
       console.log('Interval tick');
       tick();
