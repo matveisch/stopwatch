@@ -1,4 +1,4 @@
-import { sample } from 'effector';
+import { createEffect, sample } from 'effector';
 import {
   $isRunning,
   $results,
@@ -9,7 +9,8 @@ import {
   startStopwatch,
   stopStopwatch,
   stopwatchDomain,
-} from './public';
+  triggerSaveResult,
+} from './private';
 import { loadFromLocalStorage, saveToLocalStorage } from './storage';
 import { tick, updateIsRunning, updateResults, updateTime } from './private';
 
@@ -33,8 +34,14 @@ $isRunning
   });
 
 $results
-  .on(saveResult, (state) => [...state, $time.getState()])
+  .on(saveResult, (state, newResult) => [...state, newResult])
   .on(deleteResult, (state, index) => state.filter((_, i) => i !== index));
+
+sample({
+  clock: triggerSaveResult,
+  source: $time,
+  target: saveResult,
+});
 
 let intervalId: number | null = null;
 
@@ -64,14 +71,6 @@ $time.on(updateTime, (_, newTime) => newTime);
 $isRunning.on(updateIsRunning, (_, newIsRunning) => newIsRunning);
 $results.on(updateResults, (_, newResults) => newResults);
 
-// Загрузка состояния при инициализации
-loadFromLocalStorage();
-
-// Обработка закрытия вкладки
-window.addEventListener('beforeunload', () => {
-  saveToLocalStorage();
-});
-
 // Обработка изменения видимости вкладки
 window.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
@@ -79,4 +78,13 @@ window.addEventListener('visibilitychange', () => {
   } else if (document.visibilityState === 'visible') {
     loadFromLocalStorage();
   }
+});
+
+// Обработка закрытия вкладки
+window.addEventListener('beforeunload', () => {
+  saveToLocalStorage();
+});
+
+export const initializeApp = createEffect(() => {
+  loadFromLocalStorage();
 });

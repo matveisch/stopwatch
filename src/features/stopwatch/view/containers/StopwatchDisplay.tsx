@@ -1,7 +1,7 @@
 import React from 'react';
 import { useUnit } from 'effector-react';
-import { $time } from '../../model';
-import { Display } from '../parts/Display';
+import { $time } from '../../model/private';
+import { Display } from '../parts';
 import { formatTime } from '../../../../lib/time';
 
 export const StopwatchDisplay: React.FC = () => {

@@ -1,7 +1,13 @@
 import React from 'react';
 import { useUnit } from 'effector-react';
-import { $isRunning, startStopwatch, stopStopwatch, resetStopwatch, saveResult } from '../../model';
-import { Button } from '../parts/Button';
+import {
+  $isRunning,
+  startStopwatch,
+  stopStopwatch,
+  resetStopwatch,
+  triggerSaveResult,
+} from '../../model/private';
+import { Button } from '../parts';
 
 export const StopwatchControls: React.FC = () => {
   const { isRunning, start, stop, reset, save } = useUnit({
@@ -9,7 +15,7 @@ export const StopwatchControls: React.FC = () => {
     start: startStopwatch,
     stop: stopStopwatch,
     reset: resetStopwatch,
-    save: saveResult,
+    save: triggerSaveResult,
   });
 
   return (

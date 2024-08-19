@@ -1,4 +1,4 @@
-import { $isRunning, $results, $time, startStopwatch, stopwatchDomain } from './public';
+import { $isRunning, $results, $time, startStopwatch, stopwatchDomain } from './private';
 import { updateIsRunning, updateResults, updateTime } from './private';
 
 export const saveToLocalStorage = stopwatchDomain.createEffect(() => {
