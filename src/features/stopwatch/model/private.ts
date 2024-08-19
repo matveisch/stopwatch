@@ -10,6 +10,7 @@ export const resetStopwatch = stopwatchDomain.createEvent();
 export const saveResult = stopwatchDomain.createEvent<number>();
 export const triggerSaveResult = stopwatchDomain.createEvent();
 export const deleteResult = stopwatchDomain.createEvent<number>();
+export const saveState = stopwatchDomain.createEvent();
 
 export const updateTime = stopwatchDomain.createEvent<number>();
 export const updateResults = stopwatchDomain.createEvent<number[]>();

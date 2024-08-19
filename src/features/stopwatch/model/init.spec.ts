@@ -1,4 +1,4 @@
-import { processLoadedState } from './storage';
+import { processLoadedState } from './init';
 
 describe('processLoadedState', () => {
   it('should return null when savedState is null', () => {

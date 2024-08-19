@@ -6,12 +6,12 @@ import {
   deleteResult,
   resetStopwatch,
   saveResult,
+  saveState,
   startStopwatch,
   stopStopwatch,
   stopwatchDomain,
   triggerSaveResult,
 } from './private';
-import { loadFromLocalStorage, saveToLocalStorage } from './storage';
 import { tick, updateIsRunning, updateResults, updateTime } from './private';
 
 $time
@@ -71,10 +71,66 @@ $time.on(updateTime, (_, newTime) => newTime);
 $isRunning.on(updateIsRunning, (_, newIsRunning) => newIsRunning);
 $results.on(updateResults, (_, newResults) => newResults);
 
+export const saveToLocalStorage = stopwatchDomain.createEffect(
+  (state: { time: number; isRunning: boolean; results: number[]; savedAt: number }) => {
+    localStorage.setItem('stopwatchState', JSON.stringify(state));
+  }
+);
+
+// Функция для обработки загруженных данных
+export const processLoadedState = (
+  savedState: string | null,
+  currentTime: number
+): { time: number; isRunning: boolean; results: number[] } | null => {
+  if (!savedState) return null;
+
+  const { time, isRunning, results, savedAt } = JSON.parse(savedState);
+  if (isRunning) {
+    const elapsedTime = currentTime - savedAt;
+    return {
+      time: time + elapsedTime,
+      isRunning,
+      results,
+    };
+  }
+  return { time, isRunning, results };
+};
+
+// Загрузка состояния из localStorage
+export const loadFromLocalStorage = stopwatchDomain.createEffect(() => {
+  const savedState = localStorage.getItem('stopwatchState');
+  const processedState = processLoadedState(savedState, Date.now());
+
+  if (processedState) {
+    updateTime(processedState.time);
+    updateIsRunning(processedState.isRunning);
+    updateResults(processedState.results);
+
+    if (processedState.isRunning) {
+      startStopwatch();
+    }
+  }
+});
+
+// Сохранение состояния
+sample({
+  clock: saveState,
+  source: {
+    time: $time,
+    isRunning: $isRunning,
+    results: $results,
+  },
+  fn: (state) => ({
+    ...state,
+    savedAt: Date.now(),
+  }),
+  target: saveToLocalStorage,
+});
+
 // Обработка изменения видимости вкладки
 window.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
-    saveToLocalStorage();
+    saveState();
   } else if (document.visibilityState === 'visible') {
     loadFromLocalStorage();
   }
@@ -82,7 +138,7 @@ window.addEventListener('visibilitychange', () => {
 
 // Обработка закрытия вкладки
 window.addEventListener('beforeunload', () => {
-  saveToLocalStorage();
+  saveState();
 });
 
 export const initializeApp = createEffect(() => {
