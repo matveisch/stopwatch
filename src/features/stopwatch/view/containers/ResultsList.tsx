@@ -1,4 +1,4 @@
-import React, { useCallback, memo } from 'react';
+import React, { memo } from 'react';
 import { useUnit } from 'effector-react';
 import styled from 'styled-components';
 import { $results, deleteResult } from '../../model';
@@ -34,12 +34,10 @@ const ResultItemComponent: React.FC<{
 export const Results: React.FC = () => {
   const [results, remove] = useUnit([$results, deleteResult]);
 
-  const handleDelete = useCallback((index: number) => remove(index), [remove]);
-
   return (
     <ResultsList>
       {results.map((result, index) => (
-        <ResultItemComponent key={index} result={result} index={index} onDelete={handleDelete} />
+        <ResultItemComponent key={index} result={result} index={index} onDelete={remove} />
       ))}
     </ResultsList>
   );
