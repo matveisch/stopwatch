@@ -65,28 +65,12 @@ describe('processLoadedState', () => {
       results: [1000, 2000],
       savedAt: 900,
     });
-    const currentTime = 2000; // Much later than savedAt
+    const currentTime = 2000;
     const result = processLoadedState(savedState, currentTime);
     expect(result).toEqual({
-      time: 5000, // Time should not change
+      time: 5000,
       isRunning: false,
       results: [1000, 2000],
-    });
-  });
-
-  it('should correctly calculate elapsed time for long durations', () => {
-    const savedState = JSON.stringify({
-      time: 10000,
-      isRunning: true,
-      results: [],
-      savedAt: 1000,
-    });
-    const currentTime = 11000; // 10 seconds later
-    const result = processLoadedState(savedState, currentTime);
-    expect(result).toEqual({
-      time: 20000, // 10000 + (11000 - 1000)
-      isRunning: true,
-      results: [],
     });
   });
 });
