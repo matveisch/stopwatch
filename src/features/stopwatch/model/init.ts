@@ -11,14 +11,7 @@ import {
   stopwatchDomain,
 } from './public';
 import { loadFromLocalStorage, saveToLocalStorage } from './storage';
-import {
-  $lastUpdateTimestamp,
-  tick,
-  updateIsRunning,
-  updateLastUpdateTimestamp,
-  updateResults,
-  updateTime,
-} from './private';
+import { tick, updateIsRunning, updateResults, updateTime } from './private';
 
 $time
   // на каждом тике увеличиваем время на 100
@@ -47,12 +40,11 @@ let intervalId: number | null = null;
 
 const handleRunningChange = (isRunning: boolean) => {
   // создаем интервал при запуске
-  if (isRunning && !intervalId) {
+  if (isRunning && intervalId === null) {
     intervalId = window.setInterval(() => {
       tick();
     }, 100);
-    // сбрасываем интервал при остановке
-  } else if (!isRunning && intervalId) {
+  } else if (!isRunning && intervalId !== null) {
     clearInterval(intervalId);
     intervalId = null;
   }
@@ -71,10 +63,6 @@ sample({
 $time.on(updateTime, (_, newTime) => newTime);
 $isRunning.on(updateIsRunning, (_, newIsRunning) => newIsRunning);
 $results.on(updateResults, (_, newResults) => newResults);
-
-// Обновляем временную метку при каждом тике
-$lastUpdateTimestamp.on(tick, () => Date.now());
-$lastUpdateTimestamp.on(updateLastUpdateTimestamp, (_, timestamp) => timestamp);
 
 // Загрузка состояния при инициализации
 loadFromLocalStorage();

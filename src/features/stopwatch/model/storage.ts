@@ -1,18 +1,12 @@
 import { $isRunning, $results, $time, startStopwatch, stopwatchDomain } from './public';
-import {
-  $lastUpdateTimestamp,
-  updateIsRunning,
-  updateLastUpdateTimestamp,
-  updateResults,
-  updateTime,
-} from './private';
+import { updateIsRunning, updateResults, updateTime } from './private';
 
 export const saveToLocalStorage = stopwatchDomain.createEffect(() => {
   const state = {
     time: $time.getState(),
     isRunning: $isRunning.getState(),
     results: $results.getState(),
-    lastUpdateTimestamp: $lastUpdateTimestamp.getState(),
+    savedAt: Date.now(),
   };
   localStorage.setItem('stopwatchState', JSON.stringify(state));
 });
@@ -21,20 +15,19 @@ export const saveToLocalStorage = stopwatchDomain.createEffect(() => {
 export const processLoadedState = (
   savedState: string | null,
   currentTime: number
-): { time: number; isRunning: boolean; results: number[]; lastUpdateTimestamp: number } | null => {
+): { time: number; isRunning: boolean; results: number[] } | null => {
   if (!savedState) return null;
 
-  const { time, isRunning, results, lastUpdateTimestamp } = JSON.parse(savedState);
+  const { time, isRunning, results, savedAt } = JSON.parse(savedState);
   if (isRunning) {
-    const elapsedTime = currentTime - lastUpdateTimestamp;
+    const elapsedTime = currentTime - savedAt;
     return {
       time: time + elapsedTime,
       isRunning,
       results,
-      lastUpdateTimestamp: currentTime,
     };
   }
-  return { time, isRunning, results, lastUpdateTimestamp };
+  return { time, isRunning, results };
 };
 
 // Загрузка состояния из localStorage
@@ -46,7 +39,7 @@ export const loadFromLocalStorage = stopwatchDomain.createEffect(() => {
     updateTime(processedState.time);
     updateIsRunning(processedState.isRunning);
     updateResults(processedState.results);
-    updateLastUpdateTimestamp(processedState.lastUpdateTimestamp);
+
     if (processedState.isRunning) {
       startStopwatch();
     }
