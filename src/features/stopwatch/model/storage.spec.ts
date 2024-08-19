@@ -1,4 +1,4 @@
-import { processLoadedState } from './storage'; // Убедитесь, что путь к файлу правильный
+import { processLoadedState } from './storage';
 
 describe('processLoadedState', () => {
   it('should return null when savedState is null', () => {
@@ -11,23 +11,22 @@ describe('processLoadedState', () => {
       time: 5000,
       isRunning: false,
       results: [1000, 2000],
-      lastUpdateTimestamp: 900,
+      savedAt: 900,
     });
     const result = processLoadedState(savedState, 1000);
     expect(result).toEqual({
       time: 5000,
       isRunning: false,
       results: [1000, 2000],
-      lastUpdateTimestamp: 900,
     });
   });
 
-  it('should update time and lastUpdateTimestamp when isRunning is true', () => {
+  it('should update time when isRunning is true', () => {
     const savedState = JSON.stringify({
       time: 5000,
       isRunning: true,
       results: [1000, 2000],
-      lastUpdateTimestamp: 900,
+      savedAt: 900,
     });
     const currentTime = 1100;
     const result = processLoadedState(savedState, currentTime);
@@ -35,7 +34,6 @@ describe('processLoadedState', () => {
       time: 5200, // 5000 + (1100 - 900)
       isRunning: true,
       results: [1000, 2000],
-      lastUpdateTimestamp: 1100,
     });
   });
 
@@ -44,7 +42,7 @@ describe('processLoadedState', () => {
       time: 3000,
       isRunning: true,
       results: [],
-      lastUpdateTimestamp: 2000,
+      savedAt: 2000,
     });
     const currentTime = 2500;
     const result = processLoadedState(savedState, currentTime);
@@ -52,12 +50,43 @@ describe('processLoadedState', () => {
       time: 3500,
       isRunning: true,
       results: [],
-      lastUpdateTimestamp: 2500,
     });
   });
 
   it('should handle invalid JSON', () => {
     const savedState = 'invalid JSON';
     expect(() => processLoadedState(savedState, 1000)).toThrow();
+  });
+
+  it('should not change time when isRunning is false, even if currentTime is different', () => {
+    const savedState = JSON.stringify({
+      time: 5000,
+      isRunning: false,
+      results: [1000, 2000],
+      savedAt: 900,
+    });
+    const currentTime = 2000; // Much later than savedAt
+    const result = processLoadedState(savedState, currentTime);
+    expect(result).toEqual({
+      time: 5000, // Time should not change
+      isRunning: false,
+      results: [1000, 2000],
+    });
+  });
+
+  it('should correctly calculate elapsed time for long durations', () => {
+    const savedState = JSON.stringify({
+      time: 10000,
+      isRunning: true,
+      results: [],
+      savedAt: 1000,
+    });
+    const currentTime = 11000; // 10 seconds later
+    const result = processLoadedState(savedState, currentTime);
+    expect(result).toEqual({
+      time: 20000, // 10000 + (11000 - 1000)
+      isRunning: true,
+      results: [],
+    });
   });
 });
