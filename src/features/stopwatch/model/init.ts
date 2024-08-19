@@ -21,9 +21,11 @@ import {
 } from './private';
 
 $time
+  // на каждом тике увеличиваем время на 100
   .on(tick, (state) => {
     return state + 100;
   })
+  // сбрасываем время при вызове resetStopwatch
   .reset(resetStopwatch);
 
 $isRunning
@@ -44,10 +46,12 @@ $results
 let intervalId: number | null = null;
 
 const handleRunningChange = (isRunning: boolean) => {
+  // создаем интервал при запуске
   if (isRunning && !intervalId) {
     intervalId = window.setInterval(() => {
       tick();
     }, 100);
+    // сбрасываем интервал при остановке
   } else if (!isRunning && intervalId) {
     clearInterval(intervalId);
     intervalId = null;
@@ -72,31 +76,19 @@ $results.on(updateResults, (_, newResults) => newResults);
 $lastUpdateTimestamp.on(tick, () => Date.now());
 $lastUpdateTimestamp.on(updateLastUpdateTimestamp, (_, timestamp) => timestamp);
 
-// Сохранение состояния при изменении
-sample({
-  clock: [$time, $isRunning, $results],
-  target: saveToLocalStorage,
-});
-
 // Загрузка состояния при инициализации
 loadFromLocalStorage();
 
-// Обработка закрытия/открытия вкладки
+// Обработка закрытия вкладки
 window.addEventListener('beforeunload', () => {
   saveToLocalStorage();
 });
 
-window.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') {
-    loadFromLocalStorage();
-  }
-});
-
-// Обновляем обработчик изменения видимости вкладки
+// Обработка изменения видимости вкладки
 window.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
     saveToLocalStorage();
-  } else {
+  } else if (document.visibilityState === 'visible') {
     loadFromLocalStorage();
   }
 });

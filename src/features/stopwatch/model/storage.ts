@@ -17,27 +17,37 @@ export const saveToLocalStorage = stopwatchDomain.createEffect(() => {
   localStorage.setItem('stopwatchState', JSON.stringify(state));
 });
 
+// Функция для обработки загруженных данных
+export const processLoadedState = (
+  savedState: string | null,
+  currentTime: number
+): { time: number; isRunning: boolean; results: number[]; lastUpdateTimestamp: number } | null => {
+  if (!savedState) return null;
+
+  const { time, isRunning, results, lastUpdateTimestamp } = JSON.parse(savedState);
+  if (isRunning) {
+    const elapsedTime = currentTime - lastUpdateTimestamp;
+    return {
+      time: time + elapsedTime,
+      isRunning,
+      results,
+      lastUpdateTimestamp: currentTime,
+    };
+  }
+  return { time, isRunning, results, lastUpdateTimestamp };
+};
+
 // Загрузка состояния из localStorage
 export const loadFromLocalStorage = stopwatchDomain.createEffect(() => {
   const savedState = localStorage.getItem('stopwatchState');
-  if (savedState) {
-    const { time, isRunning, results, lastUpdateTimestamp } = JSON.parse(savedState);
+  const processedState = processLoadedState(savedState, Date.now());
 
-    if (isRunning) {
-      const currentTimestamp = Date.now();
-      const elapsedTime = currentTimestamp - lastUpdateTimestamp;
-      const newTime = time + elapsedTime;
-      updateTime(newTime);
-      updateLastUpdateTimestamp(currentTimestamp);
-    } else {
-      updateTime(time);
-      updateLastUpdateTimestamp(lastUpdateTimestamp);
-    }
-
-    updateIsRunning(isRunning);
-    updateResults(results);
-
-    if (isRunning) {
+  if (processedState) {
+    updateTime(processedState.time);
+    updateIsRunning(processedState.isRunning);
+    updateResults(processedState.results);
+    updateLastUpdateTimestamp(processedState.lastUpdateTimestamp);
+    if (processedState.isRunning) {
       startStopwatch();
     }
   }
