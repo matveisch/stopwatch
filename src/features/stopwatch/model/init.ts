@@ -11,8 +11,11 @@ import {
   stopStopwatch,
   stopwatchDomain,
   triggerSaveResult,
+  tick,
+  updateIsRunning,
+  updateResults,
+  updateTime,
 } from './private';
-import { tick, updateIsRunning, updateResults, updateTime } from './private';
 
 $time
   // на каждом тике увеличиваем время на 100
